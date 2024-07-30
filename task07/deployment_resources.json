@@ -20,13 +20,7 @@
           "Resource": "*"
         }
       ],
-      "Version": "2012-10-17",
-      "event_sources": [
-        {
-          "resource_type": "cloudwatch_rule_trigger",
-          "target_rule": "uuid_trigger"
-        }
-      ]
+      "Version": "2012-10-17"
     },
     "resource_type": "iam_policy"
   },
