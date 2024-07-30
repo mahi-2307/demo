@@ -3,6 +3,8 @@ package com.task07;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
+import com.syndicate.deployment.annotations.resources.DependsOn;
+import com.syndicate.deployment.model.ResourceType;
 import com.syndicate.deployment.model.RetentionSetting;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -21,6 +23,11 @@ import java.time.format.DateTimeFormatter;
 		roleName = "uuid_generator-role",
 		isPublishVersion = false,
 		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
+)
+
+@DependsOn(
+		name = "uuid_trigger",
+		resourceType = ResourceType.CLOUDWATCH_RULE
 )
 public class UuidGenerator implements RequestHandler<ScheduledEvent, Map<String, Object>> {
 
