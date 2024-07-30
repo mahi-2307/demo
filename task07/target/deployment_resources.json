@@ -13,7 +13,10 @@
     "timeout" : 300,
     "subnet_ids" : [ ],
     "security_group_ids" : [ ],
-    "dependencies" : [ ],
+    "dependencies" : [ {
+      "resource_name" : "uuid_trigger",
+      "resource_type" : "cloudwatch_rule"
+    } ],
     "event_sources" : [ ],
     "env_variables" : { },
     "publish_version" : false,
