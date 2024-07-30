@@ -12,6 +12,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -39,24 +40,17 @@ public class UuidGenerator implements RequestHandler<ScheduledEvent, Map<String,
 	@Override
 	public Map<String, Object> handleRequest(ScheduledEvent event, Context context) {
 		AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
+		String timestamp = Instant.now().toString();
+		String fileName = timestamp + ".json";
 
-		// Generate 10 random UUIDs
 		List<String> uuids = new ArrayList<>();
 		for (int i = 0; i < 10; i++) {
 			uuids.add(UUID.randomUUID().toString());
 		}
 
-		// Create a JSON object
-		Map<String, Object> jsonMap = new HashMap<>();
-		jsonMap.put("ids", uuids);
+		String content = "{\n  \"ids\": [\n    \"" + String.join("\",\n    \"", uuids) + "\"\n  ]\n}";
 
-		// Generate file name based on execution start time
-		String fileName = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT) + ".json";
-
-		// Upload the JSON object to S3
-		s3Client.putObject(new PutObjectRequest(BUCKET_NAME, fileName, jsonMap.toString()));
-
-		// Create the result map
+		s3Client.putObject(BUCKET_NAME, fileName, content);
 		Map<String, Object> resultMap = new HashMap<>();
 		resultMap.put("statusCode", 200);
 		resultMap.put("body", "UUIDs generated and stored in S3 bucket");
