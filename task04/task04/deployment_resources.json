@@ -25,7 +25,7 @@
     },
     "resource_type": "iam_policy"
   },
-  "sqs-lambda-role": {
+  "sqs_handler-role": {
     "predefined_policies": [
       "AWSLambdaSQSQueueExecutionRole"
     ],
@@ -35,7 +35,7 @@
     ],
     "resource_type": "iam_role"
   },
-  "sns-lambda-role": {
+  "sns_handler-role": {
     "resource_type": "iam_role",
     "principal_service": "lambda",
     "predefined_policies": [
