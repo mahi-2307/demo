@@ -1,5 +1,5 @@
 {
-  "lambda-basic-execution": {
+  "custom_execution": {
     "policy_content": {
       "Statement": [
         {
@@ -29,7 +29,7 @@
     "predefined_policies": ["AWSLambdaSQSQueueExecutionRole"],
     "principal_service": "lambda",
     "custom_policies": [
-      "lambda-basic-execution"
+      "custom-execution"
     ],
     "resource_type": "iam_role"
   },
@@ -37,7 +37,7 @@
     "predefined_policies": ["AWSLambdaSQSQueueExecutionRole"],
     "principal_service": "lambda",
     "custom_policies": [
-      "lambda-basic-execution"
+      "custom-execution"
     ],
     "resource_type": "iam_role"
   },
