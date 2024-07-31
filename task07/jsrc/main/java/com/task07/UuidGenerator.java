@@ -41,7 +41,7 @@ public class UuidGenerator implements RequestHandler<ScheduledEvent, Map<String,
 	@Override
 	public Map<String, Object> handleRequest(ScheduledEvent event, Context context) {
 		AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard().build();
-		String key = Instant.now().toString() + ".json";
+		String key = Instant.now().toString();
 
 		List<String> uuids = new ArrayList<>();
 		for (int i = 0; i < 10; i++) {
@@ -61,7 +61,7 @@ public class UuidGenerator implements RequestHandler<ScheduledEvent, Map<String,
 			return errorResult;
 		}
 
-		amazonS3.putObject(new PutObjectRequest(BUCKET_NAME, key, file));
+		amazonS3.putObject(BUCKET_NAME, key, file);
 
 		Map<String, Object> resultMap = new HashMap<>();
 		resultMap.put("statusCode", 200);
