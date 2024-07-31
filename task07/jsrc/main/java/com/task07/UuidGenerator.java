@@ -4,14 +4,18 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
+import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.events.RuleEventSource;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.annotations.resources.DependsOn;
 import com.syndicate.deployment.model.ResourceType;
 import com.syndicate.deployment.model.RetentionSetting;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -35,13 +39,17 @@ import java.util.UUID;
 		name = "uuid_trigger",
 		resourceType = ResourceType.CLOUDWATCH_RULE
 )
+@EnvironmentVariables(value = {
+		@EnvironmentVariable(key = "bucket_name", value = "${bucket_name}"),
+		@EnvironmentVariable(key = "region",value = "${region}")
+})
 public class UuidGenerator implements RequestHandler<ScheduledEvent, Map<String, Object>> {
 
-	private static final String BUCKET_NAME = "uuid-storage";
+	private static final String BUCKET_NAME = System.getenv("bucket_name");
 
 	@Override
 	public Map<String, Object> handleRequest(ScheduledEvent event, Context context) {
-		AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard().build();
+		AmazonS3 amazonS3 = AmazonS3Client.builder().withRegion(System.getenv("region")).build();
 		String key = Instant.now().toString();
 
 		List<String> uuids = new ArrayList<>();

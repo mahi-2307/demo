@@ -21,7 +21,10 @@
       "resource_type" : "cloudwatch_rule_trigger",
       "target_rule" : "uuid_trigger"
     } ],
-    "env_variables" : { },
+    "env_variables" : {
+      "bucket_name" : "${bucket_name}",
+      "region" : "${region}"
+    },
     "publish_version" : false,
     "logs_expiration" : "${logs_expiration}",
     "snap_start" : "None"
