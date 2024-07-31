@@ -40,7 +40,7 @@ import java.util.UUID;
 		resourceType = ResourceType.CLOUDWATCH_RULE
 )
 @EnvironmentVariables(value = {
-		@EnvironmentVariable(key = "bucket_name", value = "${bucket_name}"),
+		@EnvironmentVariable(key = "target_bucket", value = "${target_bucket}"),
 		@EnvironmentVariable(key = "region",value = "${region}")
 })
 public class UuidGenerator implements RequestHandler<ScheduledEvent, Map<String, Object>> {
