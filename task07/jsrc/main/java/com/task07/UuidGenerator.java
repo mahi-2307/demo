@@ -45,7 +45,7 @@ import java.util.UUID;
 })
 public class UuidGenerator implements RequestHandler<ScheduledEvent, Map<String, Object>> {
 
-	private static final String BUCKET_NAME = System.getenv("bucket_name");
+	private static final String BUCKET_NAME = System.getenv("target_bucket");
 
 	@Override
 	public Map<String, Object> handleRequest(ScheduledEvent event, Context context) {
