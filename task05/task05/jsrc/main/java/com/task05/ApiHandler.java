@@ -6,7 +6,6 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
@@ -31,19 +30,19 @@ public class ApiHandler implements RequestHandler<Object, Map<String, Object>> {
 		Table table = dynamoDB.getTable("cmtr-7767740d-Events");
 		try {
 			final Map<String, String> detailsMap = new HashMap<>();
-			detailsMap.put("name","test");
-			detailsMap.put("surname", "item");
-//			PutItemOutcome outcome = table.putItem(new Item()
-//					.withPrimaryKey("id",1)
-//					.with("principalId",1)
-//					.with("createdAt", Instant.now())
-//					.withMap("content",detailsMap));
-//			System.out.println(outcome.toString());
-			Map<String, AttributeValue> attributesMap = new HashMap<>();
-			attributesMap.put("id",new AttributeValue(String.valueOf(1)));
-			attributesMap.put("content", new AttributeValue(String.valueOf(detailsMap)));
-			amazonDynamoDB.putItem(
-					"cmtr-7767740d-Events",attributesMap);
+			detailsMap.put("name","Mahidhar");
+			detailsMap.put("surname", "Katam");
+			PutItemOutcome outcome = table.putItem(new Item()
+					.withPrimaryKey("id",1)
+					.with("principalId",1)
+					.with("createdAt", Instant.now())
+					.withMap("content",detailsMap));
+			System.out.println(outcome.toString());
+//			Map<String, AttributeValue> attributesMap = new HashMap<>();
+//			attributesMap.put("id",new AttributeValue(String.valueOf(1)));
+//			attributesMap.put("content", new AttributeValue(String.valueOf(detailsMap)));
+//			amazonDynamoDB.putItem(
+//					"cmtr-7767740d-Events",outcome);
 
 
 		}
@@ -52,8 +51,8 @@ public class ApiHandler implements RequestHandler<Object, Map<String, Object>> {
 		}
 		System.out.println("Hello from lambda");
 		Map<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap.put("statusCode", 200);
-		resultMap.put("body", "Hello from Lambda");
+		resultMap.put("statusCode", 201);
+		resultMap.put("event",table.getItem());
 		return resultMap;
 	}
 }
