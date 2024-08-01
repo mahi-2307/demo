@@ -31,8 +31,8 @@ public class ApiHandler implements RequestHandler<Object, Map<String, Object>> {
 		Table table = dynamoDB.getTable("cmtr-7767740d-Events");
 		try {
 			final Map<String, String> detailsMap = new HashMap<>();
-			detailsMap.put("name","Mahidhar");
-			detailsMap.put("surname", "Katam");
+			detailsMap.put("name","test");
+			detailsMap.put("surname", "item");
 //			PutItemOutcome outcome = table.putItem(new Item()
 //					.withPrimaryKey("id",1)
 //					.with("principalId",1)
