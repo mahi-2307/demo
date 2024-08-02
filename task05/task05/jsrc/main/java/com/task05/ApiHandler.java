@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -20,6 +21,9 @@ import lombok.SneakyThrows;
 import org.joda.time.Instant;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 @LambdaHandler(lambdaName = "api_handler",
@@ -27,7 +31,7 @@ import java.util.UUID;
 		isPublishVersion = false,
 		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
-public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent,APIGatewayProxyResponseEvent> {
+public class ApiHandler implements RequestHandler<Map<String,Object> ,APIGatewayProxyResponseEvent> {
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder.standard()
@@ -35,29 +39,47 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent,AP
 			.build();
 	private final DynamoDB dynamoDB = new DynamoDB(amazonDynamoDB);
 	private final String DYNAMODB_TABLE_NAME = "cmtr-7767740d-Events";
+
 	@SneakyThrows
-    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent apiGatewayProxyRequestEvent, Context context) {
-		JsonParser jsonParser = objectMapper.getFactory().createParser(apiGatewayProxyRequestEvent.getBody());
-		JsonNode rootNode = objectMapper.readTree(jsonParser);
+	public APIGatewayProxyResponseEvent handleRequest(Map<String,Object> request, Context context) {
+//		// Check if request body is null
+//		String requestBody = apiGatewayProxyRequestEvent.getBody();
+//		if (requestBody == null) {
+//			throw new IllegalArgumentException("Request body is null");
+//		}
+//
+//		// Parse the JSON body
+//		JsonNode rootNode = objectMapper.readTree(requestBody);
+//
+//		// Extract principalId
+//		JsonNode principalIdNode = rootNode.path("principalId");
+//		if (principalIdNode.isMissingNode()) {
+//			throw new IllegalArgumentException("Field 'principalId' is missing");
+//		}
+//		int principalId = principalIdNode.asInt();
 
-		int principalId = rootNode.path("principalId").asInt()	;
-		String id = UUID.randomUUID().toString();
-		// Get current time in ISO 8601 format
-		String createdAt =Instant.now().toString();
-		JsonNode bodyNode = rootNode.get("body");
-		//EmployeeBody employeeBody = objectMapper.treeToValue(bodyNode, EmployeeBody.class);
-		String body = rootNode.path("body").asText();
-		Item item = new Item()
-				.withPrimaryKey("id", id)
-				.withNumber("principalId", principalId)
-				.withString("createdAt", createdAt)
-				.withString("body", body);
+		// Generate a unique ID and get the current timestamp
 
-		dynamoDB.getTable(DYNAMODB_TABLE_NAME).putItem(new PutItemSpec().withItem(item));
-		APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
 
-		response.setStatusCode(201);
-		response.setBody("event");
-return response;
+		Map<String, AttributeValue> itemValues = new HashMap<>();
+
+		Random random = new Random();
+		int numericId = random.nextInt(Integer.MAX_VALUE);
+		itemValues.put("id", new AttributeValue().withS(Integer.toString(numericId)));
+
+		String principalId = String.valueOf(request.getOrDefault("principalId", "defaultPrincipalId"));
+		String content = String.valueOf(request.getOrDefault("content", "defaultContent"));
+		itemValues.put("principalId", new AttributeValue().withS(principalId));
+		itemValues.put("content", new AttributeValue().withS(content));
+
+		amazonDynamoDB.putItem("cmtr-7767740d-Events", itemValues);
+
+//		Map<String, Object> response = new HashMap<String, Object>();
+//		response.put("statusCode", 201);
+//		response.put("body", itemValues);
+		APIGatewayProxyResponseEvent apiGatewayProxyResponseEvent = new APIGatewayProxyResponseEvent();
+		return apiGatewayProxyResponseEvent.withBody("This is working");
+
+
 	}
 }
