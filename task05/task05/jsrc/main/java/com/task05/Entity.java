@@ -13,16 +13,12 @@ import java.util.Map;
 
 @AllArgsConstructor
 public class Entity {
-    String id;
     int principalId;
-    String currentTime;
     Map<String, String> body;
     public Entity(String json){
         Gson gson= new Gson();
         Entity entity = gson.fromJson(json,Entity.class);
-        this.id = entity.id;
         this.principalId = entity.principalId;
-        this.currentTime = entity.currentTime;
         this.body = entity.body;
     }
 
