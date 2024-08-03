@@ -1,2 +1,7 @@
+com\task05\Request$RequestBuilder.class
 com\task05\ApiHandler.class
+com\task05\Entity$EntityBuilder.class
+com\task05\Response$ResponseBuilder.class
 com\task05\Entity.class
+com\task05\Request.class
+com\task05\Response.class
