@@ -1,29 +1,19 @@
 package com.task05;
 
-import com.google.gson.Gson;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 
 import java.util.Map;
 
+@Builder
 @Setter
 @Getter
-
+@NoArgsConstructor
 @AllArgsConstructor
 public class Entity {
-    int principalId;
-    Map<String, String> body;
-    public Entity(String json){
-        Gson gson= new Gson();
-        Entity entity = gson.fromJson(json,Entity.class);
-        this.principalId = entity.principalId;
-        this.body = entity.body;
-    }
+    private String id;
+    private int principalId;
+    private String createdAt;
+    private Map<String,String> body;
 
-    @Override
-    public String toString() {
-        return new Gson().toString();
-    }
 }

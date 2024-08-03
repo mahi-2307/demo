@@ -4,26 +4,19 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jdi.request.EventRequest;
+import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
+import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.model.RetentionSetting;
-import lombok.SneakyThrows;
-import org.joda.time.Instant;
+import jdk.jfr.Event;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 
 @LambdaHandler(lambdaName = "api_handler",
@@ -31,55 +24,46 @@ import java.util.UUID;
 		isPublishVersion = false,
 		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
-public class ApiHandler implements RequestHandler<Map<String,Object> ,APIGatewayProxyResponseEvent> {
+@EnvironmentVariables(value = {
+		@EnvironmentVariable(key = "target_table", value = "${target_table}")
+})
+public class ApiHandler implements RequestHandler<Request, Response> {
 
-	private final ObjectMapper objectMapper = new ObjectMapper();
-	private final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder.standard()
-			.withRegion("eu-central-1")
-			.build();
-	private final DynamoDB dynamoDB = new DynamoDB(amazonDynamoDB);
-	private final String DYNAMODB_TABLE_NAME = "cmtr-7767740d-Events";
+	AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
+	private final DynamoDB dynamoDb = new DynamoDB(client);
+	private final String DYNAMODB_TABLE_NAME = System.getenv("target_table");
 
-	@SneakyThrows
-	public APIGatewayProxyResponseEvent handleRequest(Map<String,Object> request, Context context) {
-//		// Check if request body is null
-//		String requestBody = apiGatewayProxyRequestEvent.getBody();
-//		if (requestBody == null) {
-//			throw new IllegalArgumentException("Request body is null");
-//		}
-//
-//		// Parse the JSON body
-//		JsonNode rootNode = objectMapper.readTree(requestBody);
-//
-//		// Extract principalId
-//		JsonNode principalIdNode = rootNode.path("principalId");
-//		if (principalIdNode.isMissingNode()) {
-//			throw new IllegalArgumentException("Field 'principalId' is missing");
-//		}
-//		int principalId = principalIdNode.asInt();
+	@Override
+	public Response handleRequest(Request event1, Context context) {
 
-		// Generate a unique ID and get the current timestamp
+		int principalId = event1.getPrincipalId();
+		Map<String, String> content = event1.getContent();
 
+		String newId = UUID.randomUUID().toString();
+		String currentTime = DateTimeFormatter.ISO_INSTANT
+				.format(Instant.now().atOffset(ZoneOffset.UTC));
 
-		Map<String, AttributeValue> itemValues = new HashMap<>();
+		Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME);
 
-		Random random = new Random();
-		int numericId = random.nextInt(Integer.MAX_VALUE);
-		itemValues.put("id", new AttributeValue().withS(Integer.toString(numericId)));
+		Item item = new Item()
+				.withPrimaryKey("id", newId)
+				.withInt("principalId", principalId)
+				.withString("createdAt", currentTime)
+				.withMap("body", content);
 
-		String principalId = String.valueOf(request.getOrDefault("principalId", "defaultPrincipalId"));
-		String content = String.valueOf(request.getOrDefault("content", "defaultContent"));
-		itemValues.put("principalId", new AttributeValue().withS(principalId));
-		itemValues.put("content", new AttributeValue().withS(content));
+		table.putItem(item);
 
-		amazonDynamoDB.putItem("cmtr-7767740d-Events", itemValues);
+		Entity event = Entity.builder()
+				.id(newId)
+				.principalId(principalId)
+				.createdAt(currentTime)
+				.body(content)
+				.build();
 
-//		Map<String, Object> response = new HashMap<String, Object>();
-//		response.put("statusCode", 201);
-//		response.put("body", itemValues);
-		APIGatewayProxyResponseEvent apiGatewayProxyResponseEvent = new APIGatewayProxyResponseEvent();
-		return apiGatewayProxyResponseEvent.withBody("This is working");
-
+        return Response.builder()
+				.statusCode(201)
+				.event(event)
+				.build();
 
 	}
 }
