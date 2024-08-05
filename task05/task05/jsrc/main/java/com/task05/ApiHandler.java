@@ -7,8 +7,6 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
@@ -29,19 +27,17 @@ import java.util.UUID;
 @EnvironmentVariables(value = {
 		@EnvironmentVariable(key = "target_table", value = "${target_table}")
 })
-public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, Response> {
+public class ApiHandler implements RequestHandler<Request, Response> {
 
 	AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
 	private final DynamoDB dynamoDb = new DynamoDB(client);
 	private final String DYNAMODB_TABLE_NAME = System.getenv("target_table");
-ObjectMapper objectMapper = new ObjectMapper();
-	@Override
-	public Response handleRequest(APIGatewayProxyRequestEvent event1, Context context) {
-		String s = event1.getBody();
-		Request request = objectMapper.convertValue(s, Request.class);
 
-		int principalId = request.getPrincipalId();
-		Map<String, String> content = request.getContent();
+	@Override
+	public Response handleRequest(Request event1, Context context) {
+
+		int principalId = event1.getPrincipalId();
+		Map<String, String> content = event1.getContent();
 
 		String newId = UUID.randomUUID().toString();
 		String currentTime = DateTimeFormatter.ISO_INSTANT
