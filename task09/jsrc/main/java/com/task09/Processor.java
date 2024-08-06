@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.UUID;
 
-@LambdaHandler(lambdaName = "api_handler", roleName = "api_handler-role", isPublishVersion = false)
+@LambdaHandler(lambdaName = "processor", roleName = "processor-role", isPublishVersion = false)
 public class Processor implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
 	private final DynamoDB dynamoDb = new DynamoDB(AmazonDynamoDBClientBuilder.standard()
