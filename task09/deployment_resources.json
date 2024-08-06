@@ -30,9 +30,10 @@
     "custom_policies": [
       "lambda-basic-execution"
     ],
-    "resource_type": "iam_role"
+    "resource_type": "iam_role",
+    "tracing_mode": "Active"
   },
-  "Weather": {
+  "${target_bucket}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "id",
     "hash_key_type": "S",
