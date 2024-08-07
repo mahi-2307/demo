@@ -2,19 +2,16 @@ package com.task09;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
-import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.AWSXRayRecorderBuilder;
-import com.amazonaws.xray.handlers.TracingHandler;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.amazonaws.xray.interceptors.TracingInterceptor;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
@@ -26,6 +23,8 @@ import com.syndicate.deployment.model.lambda.url.InvokeMode;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -34,26 +33,27 @@ import java.util.UUID;
 		roleName = "processor-role",
 		isPublishVersion = false,
 		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
-
 )
 @LambdaUrlConfig(
 		authType = AuthType.NONE,
 		invokeMode = InvokeMode.BUFFERED
 )
 @EnvironmentVariables(
-		@EnvironmentVariable(key = "target_table",
-				value = "${target_table}")
-
+		@EnvironmentVariable(key = "target_table", value = "${target_table}")
 )
 public class Processor implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayV2HTTPResponse> {
 
-	private final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder.standard().build();
-	private final DynamoDB dynamoDB = new DynamoDB(amazonDynamoDB);
-	private final String table = System.getenv("target_table");
-	private final Table weatherTable = dynamoDB.getTable(table);
+	private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder()
+			.region(Region.EU_CENTRAL_1)
+			.overrideConfiguration(ClientOverrideConfiguration.builder()
+					.addExecutionInterceptor(new TracingInterceptor()) // Add X-Ray tracing interceptor
+					.build())
+			.build();
+	private final String tableName = System.getenv("target_table");
 
 	@Override
 	public APIGatewayV2HTTPResponse handleRequest(APIGatewayProxyRequestEvent request, Context context) {
+
 		APIGatewayV2HTTPResponse response;
 		try {
 			// Fetch weather data
@@ -63,12 +63,16 @@ public class Processor implements RequestHandler<APIGatewayProxyRequestEvent, AP
 			String id = UUID.randomUUID().toString();
 
 			// Create a new item to put in the DynamoDB table
-			Item item = new Item()
-					.withPrimaryKey("id", id)
-					.withString("forecast", weatherData);
+			Map<String, AttributeValue> item = new HashMap<>();
+			item.put("id", AttributeValue.builder().s(id).build());
+			item.put("forecast", AttributeValue.builder().s(weatherData).build());
 
-			// Put the item in the table
-			weatherTable.putItem(item);
+			// Put the item in the DynamoDB table
+			PutItemRequest putItemRequest = PutItemRequest.builder()
+					.tableName(tableName)
+					.item(item)
+					.build();
+			PutItemResponse putItemResponse = dynamoDbClient.putItem(putItemRequest);
 
 			// Build the successful response
 			response = APIGatewayV2HTTPResponse.builder()
@@ -83,6 +87,7 @@ public class Processor implements RequestHandler<APIGatewayProxyRequestEvent, AP
 					.withBody("{\"statusCode\": 500, \"message\": \"Internal Server Error\"} " + ex.getMessage())
 					.build();
 		}
+
 		return response;
 	}
 
