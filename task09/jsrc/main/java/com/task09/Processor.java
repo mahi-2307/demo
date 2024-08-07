@@ -19,6 +19,7 @@ import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.annotations.lambda.LambdaUrlConfig;
+import com.syndicate.deployment.model.RetentionSetting;
 import com.syndicate.deployment.model.lambda.url.AuthType;
 import com.syndicate.deployment.model.lambda.url.InvokeMode;
 
@@ -31,30 +32,28 @@ import java.util.UUID;
 @LambdaHandler(
 		lambdaName = "processor",
 		roleName = "processor-role",
-		isPublishVersion = false
+		isPublishVersion = false,
+		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
+
 )
 @LambdaUrlConfig(
 		authType = AuthType.NONE,
 		invokeMode = InvokeMode.BUFFERED
 )
 @EnvironmentVariables(
-		@EnvironmentVariable(key = "target_bucket",
-				value = "${target_bucket}")
+		@EnvironmentVariable(key = "target_table",
+				value = "${target_table}")
+
 )
 public class Processor implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayV2HTTPResponse> {
 
-	private final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder.standard()
-			.withRequestHandlers(new TracingHandler(AWSXRay.getGlobalRecorder())) // Attach X-Ray tracing handler
-			.build();
+	private final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder.standard().build();
 	private final DynamoDB dynamoDB = new DynamoDB(amazonDynamoDB);
-	private final String DYNAMODB_TABLE_NAME = System.getenv("target_bucket");
-	private final Table weatherTable = dynamoDB.getTable(DYNAMODB_TABLE_NAME);
+	private final String table = System.getenv("target_table");
+	private final Table weatherTable = dynamoDB.getTable(table);
 
 	@Override
 	public APIGatewayV2HTTPResponse handleRequest(APIGatewayProxyRequestEvent request, Context context) {
-		// Start X-Ray segment
-		AWSXRay.beginSegment("ProcessorLambdaSegment");
-
 		APIGatewayV2HTTPResponse response;
 		try {
 			// Fetch weather data
@@ -83,11 +82,7 @@ public class Processor implements RequestHandler<APIGatewayProxyRequestEvent, AP
 					.withStatusCode(500)
 					.withBody("{\"statusCode\": 500, \"message\": \"Internal Server Error\"} " + ex.getMessage())
 					.build();
-		} finally {
-			// End the X-Ray segment
-			AWSXRay.endSegment();
 		}
-
 		return response;
 	}
 

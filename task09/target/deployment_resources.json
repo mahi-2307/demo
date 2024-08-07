@@ -16,9 +16,10 @@
     "dependencies" : [ ],
     "event_sources" : [ ],
     "env_variables" : {
-      "target_bucket" : "${target_bucket}"
+      "target_table" : "${target_table}"
     },
     "publish_version" : false,
+    "logs_expiration" : "${logs_expiration}",
     "snap_start" : "None",
     "url_config" : {
       "auth_type" : "NONE",
