@@ -6,6 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.interceptors.TracingInterceptor;
+import com.syndicate.deployment.model.TracingMode;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -32,7 +33,8 @@ import java.util.UUID;
 		lambdaName = "processor",
 		roleName = "processor-role",
 		isPublishVersion = false,
-		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
+		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED,
+		tracingMode = TracingMode.Active
 )
 @LambdaUrlConfig(
 		authType = AuthType.NONE,
