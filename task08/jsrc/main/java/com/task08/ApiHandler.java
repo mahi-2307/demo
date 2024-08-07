@@ -27,7 +27,7 @@ import java.io.IOException;
 )
 @LambdaLayer(
 		layerName = "sdk-layer",
-		libraries = {"lib/open-meteo-api-1.0-SNAPSHOT.jar"},
+		libraries = {"lib/OpenMeteoApi-1.0-SNAPSHOT.jar"},
 		runtime = DeploymentRuntime.JAVA11,
 		architectures = {Architecture.ARM64},
 		artifactExtension = ArtifactExtension.ZIP
