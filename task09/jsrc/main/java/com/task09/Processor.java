@@ -1,34 +1,30 @@
 package com.task09;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.xspec.L;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.interceptors.TracingInterceptor;
-import com.syndicate.deployment.model.TracingMode;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.annotations.lambda.LambdaUrlConfig;
 import com.syndicate.deployment.model.RetentionSetting;
+import com.syndicate.deployment.model.TracingMode;
 import com.syndicate.deployment.model.lambda.url.AuthType;
 import com.syndicate.deployment.model.lambda.url.InvokeMode;
+import com.task09.WeatherForecast;
 
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.UUID;
-
+import java.util.*;
 @LambdaHandler(
 		lambdaName = "processor",
 		roleName = "processor-role",
@@ -38,48 +34,67 @@ import java.util.UUID;
 )
 @LambdaUrlConfig(
 		authType = AuthType.NONE,
-		invokeMode = InvokeMode.BUFFERED
-)
+		invokeMode =InvokeMode.BUFFERED)
 @EnvironmentVariables(
 		@EnvironmentVariable(key = "target_table", value = "${target_table}")
 )
 public class Processor implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayV2HTTPResponse> {
 
-	private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder()
-			.region(Region.EU_CENTRAL_1)
-			.overrideConfiguration(ClientOverrideConfiguration.builder()
-					.addExecutionInterceptor(new TracingInterceptor()) // Add X-Ray tracing interceptor
-					.build())
-			.build();
+	private final AmazonDynamoDB amazonDynamoDBClient = AmazonDynamoDBClientBuilder.defaultClient();
+	private final DynamoDB dynamoDB = new DynamoDB(amazonDynamoDBClient);
 	private final String tableName = System.getenv("target_table");
 
 	@Override
 	public APIGatewayV2HTTPResponse handleRequest(APIGatewayProxyRequestEvent request, Context context) {
-
 		APIGatewayV2HTTPResponse response;
 		try {
 			// Fetch weather data
 			String weatherData = fetchWeatherData();
+			ObjectMapper objectMapper = new ObjectMapper();
 
-			// Generate a unique ID for the DynamoDB item
+			// Deserialize JSON to WeatherForecast object
+			WeatherForecast forecast = objectMapper.readValue(weatherData, WeatherForecast.class);
+
+			// Create a Map to store the forecast data
+			Map<String, Object> forecastMap = new HashMap<>();
+			forecastMap.put("elevation", forecast.getElevation());
+			forecastMap.put("generationtime_ms", forecast.getGenerationtime_ms());
+			forecastMap.put("latitude", forecast.getLatitude());
+			forecastMap.put("longitude", forecast.getLongitude());
+			forecastMap.put("timezone", forecast.getTimezone());
+			forecastMap.put("timezone_abbreviation", forecast.getTimezone_abbreviation());
+			forecastMap.put("utc_offset_seconds", forecast.getUtc_offset_seconds());
+
+			// Create a Map for hourly data
+			Map<String, List<Object>> hourlyMap = new HashMap<>();
+			List<Object> list = new ArrayList<>();
+			list.add(forecast.getHourly().getTime());
+			List<Object> list2 = new ArrayList<>();
+			list2.add(forecast.getHourly().getTemperature_2m());
+			hourlyMap.put("time", list);
+			hourlyMap.put("temperature_2m", list2);
+			forecastMap.put("hourly", hourlyMap);
+
+			// Create a Map for hourly units
+			Map<String, String> hourlyUnitsMap = new HashMap<>();
+			hourlyUnitsMap.put("time", forecast.getHourly_units().getTime());
+			hourlyUnitsMap.put("temperature_2m", forecast.getHourly_units().getTemperature_2m());
+			forecastMap.put("hourly_units", hourlyUnitsMap);
+
+			// Generate a unique ID
 			String id = UUID.randomUUID().toString();
 
-			// Create a new item to put in the DynamoDB table
-			Map<String, AttributeValue> item = new HashMap<>();
-			item.put("id", AttributeValue.builder().s(id).build());
-			item.put("forecast", AttributeValue.builder().s(weatherData).build());
-
-			// Put the item in the DynamoDB table
-			PutItemRequest putItemRequest = PutItemRequest.builder()
-					.tableName(tableName)
-					.item(item)
-					.build();
-			PutItemResponse putItemResponse = dynamoDbClient.putItem(putItemRequest);
+			// Store the forecast data in DynamoDB
+			Table table = dynamoDB.getTable(tableName);
+			Item item = new Item()
+					.withPrimaryKey("id", id)
+					.withMap("forecast", forecastMap);
+			table.putItem(item);
 
 			// Build the successful response
 			response = APIGatewayV2HTTPResponse.builder()
 					.withStatusCode(200)
-					.withBody(weatherData)
+					.withBody("Weather data successfully processed and stored.")
 					.build();
 
 		} catch (Exception ex) {
