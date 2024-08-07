@@ -66,13 +66,9 @@ public class Processor implements RequestHandler<APIGatewayProxyRequestEvent, AP
 			forecastMap.put("utc_offset_seconds", forecast.getUtc_offset_seconds());
 
 			// Create a Map for hourly data
-			Map<String, List<Object>> hourlyMap = new HashMap<>();
-			List<Object> list = new ArrayList<>();
-			list.add(forecast.getHourly().getTime());
-			List<Object> list2 = new ArrayList<>();
-			list2.add(forecast.getHourly().getTemperature_2m());
-			hourlyMap.put("time", list);
-			hourlyMap.put("temperature_2m", list2);
+			Map<String,Object> hourlyMap = new HashMap<>();
+			hourlyMap.put("time", (forecast.getHourly().getTime()));
+			hourlyMap.put("temperature_2m", forecast.getHourly().getTemperature_2m());
 			forecastMap.put("hourly", hourlyMap);
 
 			// Create a Map for hourly units
