@@ -165,12 +165,12 @@
         "identity_source": "method.request.header.Authorization",
         "ttl": 300,
         "user_pools": [
-          "${pool_name}"
+          "${booking_userpool}"
         ]
       }
     }
   },
-  "${pool_name}": {
+  "${booking_userpool}": {
     "resource_type": "cognito_idp",
     "password_policy": {
       "minimum_length": 12,

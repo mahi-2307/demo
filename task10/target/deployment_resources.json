@@ -19,12 +19,12 @@
       "CLIENT_ID" : {
         "resource_type" : "cognito_idp",
         "parameter" : "client_id",
-        "resource_name" : "${pool_name}"
+        "resource_name" : "${booking_userpool}"
       },
       "COGNITO_ID" : {
         "resource_type" : "cognito_idp",
         "parameter" : "id",
-        "resource_name" : "${pool_name}"
+        "resource_name" : "${booking_userpool}"
       },
       "REGION" : "${region}"
     },
