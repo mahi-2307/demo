@@ -1,0 +1,12 @@
+com\task10\ApiHandler.class
+com\task10\dto\Reservations.class
+com\task10\handler\PostReservations.class
+com\task10\CognitoService$1.class
+com\task10\dto\SignIn.class
+com\task10\dto\SignUp.class
+com\task10\handler\GetReservations.class
+com\task10\handler\PostSignIn.class
+com\task10\CognitoService$2.class
+com\task10\dto\Tables.class
+com\task10\handler\PostSignUp.class
+com\task10\CognitoService.class
