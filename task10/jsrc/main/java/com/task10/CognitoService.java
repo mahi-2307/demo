@@ -15,7 +15,8 @@ public class CognitoService {
             .build();
 
     public SignUpResult signUp(String email, String password) {
-        SignUpRequest request = new SignUpRequest().withUsername(email).withPassword(password);
+        SignUpRequest request = new SignUpRequest().withClientId(System.getenv("CLIENT_ID"))
+                .withUsername(email).withPassword(password);
         return cognitoIdentityProvider.signUp(request);
     }
 
@@ -27,6 +28,8 @@ public class CognitoService {
 
         AdminInitiateAuthRequest authRequest = new AdminInitiateAuthRequest()
                 .withAuthFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
+                .withUserPoolId(System.getenv("COGNITO_ID"))
+                .withClientId(System.getenv("CLIENT_ID"))
                 .withAuthParameters(authParams);
         AdminInitiateAuthResult authResult = cognitoIdentityProvider.adminInitiateAuth(authRequest);
         AuthenticationResultType resultType = authResult.getAuthenticationResult();

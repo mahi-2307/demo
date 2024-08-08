@@ -15,7 +15,19 @@
     "security_group_ids" : [ ],
     "dependencies" : [ ],
     "event_sources" : [ ],
-    "env_variables" : { },
+    "env_variables" : {
+      "CLIENT_ID" : {
+        "resource_type" : "cognito_idp",
+        "parameter" : "client_id",
+        "resource_name" : "${pool_name}"
+      },
+      "COGNITO_ID" : {
+        "resource_type" : "cognito_idp",
+        "parameter" : "id",
+        "resource_name" : "${pool_name}"
+      },
+      "REGION" : "${region}"
+    },
     "publish_version" : false,
     "logs_expiration" : "${logs_expiration}",
     "snap_start" : "None"
