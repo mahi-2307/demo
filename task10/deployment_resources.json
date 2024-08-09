@@ -108,7 +108,8 @@
           "responses": [],
           "integration_responses": [],
           "default_error_pattern": true
-        },  "GET": {
+        },
+        "GET": {
           "enable_proxy": true,
           "authorization_type": "cognito_user",
           "integration_type": "lambda",
@@ -120,7 +121,6 @@
           "integration_responses": [],
           "default_error_pattern": true
         }
-
       },
       "/reservations": {
         "enable_cors": false,
@@ -135,7 +135,8 @@
           "responses": [],
           "integration_responses": [],
           "default_error_pattern": true
-        }, "GET": {
+        },
+        "GET": {
           "enable_proxy": true,
           "authorization_type": "cognito_user",
           "integration_type": "lambda",
@@ -147,10 +148,10 @@
           "integration_responses": [],
           "default_error_pattern": true
         }
-
       }
+
     },
-    "authorizer": {
+    "authorizers": {
       "cognito_user": {
         "type": "COGNITO_USER_POOLS",
         "identity_source": "method.request.header.Authorization",
