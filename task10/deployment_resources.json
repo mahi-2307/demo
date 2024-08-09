@@ -99,7 +99,7 @@
         "enable_cors": false,
         "POST": {
           "enable_proxy": true,
-          "authorization_type": "COGNITO_USER_POOLS",
+          "authorization_type": "cognito_user",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "api_key_required": false,
@@ -115,7 +115,7 @@
         "enable_cors": false,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "COGNITO_USER_POOLS",
+          "authorization_type": "cognito_user",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "api_key_required": false,
@@ -131,7 +131,7 @@
         "enable_cors": false,
         "POST": {
           "enable_proxy": true,
-          "authorization_type": "COGNITO_USER_POOLS",
+          "authorization_type": "cognito_user",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "api_key_required": false,
@@ -147,7 +147,7 @@
         "enable_cors": false,
         "GET": {
           "enable_proxy": true,
-          "authorization_type": "COGNITO_USER_POOLS",
+          "authorization_type": "cognito_user",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "api_key_required": false,
