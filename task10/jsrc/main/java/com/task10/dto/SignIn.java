@@ -1,15 +1,32 @@
 package com.task10.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.json.JSONObject;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class SignIn {
-    private String email;
-    private String password;
+    private final String nickName;
+    private final String password;
+
+    public SignIn(String nickName, String password) {
+        if (nickName == null || password == null) {
+            throw new IllegalArgumentException("Missing or incomplete data.");
+        }
+        this.nickName = nickName;
+        this.password = password;
+    }
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public static SignIn fromJson(String jsonString) {
+        JSONObject json = new JSONObject(jsonString);
+        String nickName = json.optString("nickName", null);
+        String password = json.optString("password", null);
+
+        return new SignIn(nickName, password);
+    }
 }

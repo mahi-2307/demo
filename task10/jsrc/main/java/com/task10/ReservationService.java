@@ -4,12 +4,13 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
+
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class ReservationService {
     private final AmazonDynamoDB dynamoDBClient = AmazonDynamoDBClientBuilder.defaultClient();
     private final String reservationsTableName = "Reservations";
 
-    public APIGatewayProxyResponseEvent handleCreateReservation(APIGatewayProxyRequestEvent request) {
+    public APIGatewayV2HTTPResponse handleCreateReservation(APIGatewayV2HTTPEvent request) {
         try {
             JSONObject json = new JSONObject(request.getBody());
             Map<String, AttributeValue> item = new HashMap<>();
@@ -33,24 +34,28 @@ public class ReservationService {
             PutItemRequest putItemRequest = new PutItemRequest().withTableName(reservationsTableName).withItem(item);
             dynamoDBClient.putItem(putItemRequest);
 
-            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("reservationId", item.get("tableNumber").getN()).toString());
+            JSONObject responseBody = new JSONObject();
+            responseBody.put("reservationId", item.get("tableNumber").getN());
+
+            return APIGatewayV2HTTPResponse.builder()
+                    .withStatusCode(200)
+                    .withBody(responseBody.toString())
+                    .build();
 
         } catch (Exception e) {
-            return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Error creating reservation: " + e.getMessage());
+            return APIGatewayV2HTTPResponse.builder()
+                    .withStatusCode(400)
+                    .withBody("Error creating reservation: " + e.getMessage())
+                    .build();
         }
     }
 
-    public APIGatewayProxyResponseEvent handleGetReservations(APIGatewayProxyRequestEvent request) {
+    public APIGatewayV2HTTPResponse handleGetReservations(APIGatewayV2HTTPEvent request) {
         try {
-            // Scan the Reservations table
             ScanRequest scanRequest = new ScanRequest().withTableName(reservationsTableName);
             ScanResult result = dynamoDBClient.scan(scanRequest);
-
-            // Create a JSON array to hold the reservations
             JSONArray reservations = new JSONArray();
             List<Map<String, AttributeValue>> items = result.getItems();
-
-            // Iterate through the result and add each item to the JSON array
             for (Map<String, AttributeValue> item : items) {
                 JSONObject reservation = new JSONObject();
                 reservation.put("tableNumber", item.get("tableNumber").getN());
@@ -62,12 +67,19 @@ public class ReservationService {
                 reservations.put(reservation);
             }
 
-            // Return the list of reservations in the response
-            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("reservations", reservations).toString());
+            JSONObject responseBody = new JSONObject();
+            responseBody.put("reservations", reservations);
+
+            return APIGatewayV2HTTPResponse.builder()
+                    .withStatusCode(200)
+                    .withBody(responseBody.toString())
+                    .build();
 
         } catch (Exception e) {
-            return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Error fetching reservations: " + e.getMessage());
+            return APIGatewayV2HTTPResponse.builder()
+                    .withStatusCode(400)
+                    .withBody("Error fetching reservations: " + e.getMessage())
+                    .build();
         }
     }
 }
-

@@ -1,17 +1,44 @@
 package com.task10.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import org.json.JSONObject;
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class SignUp {
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String password;
+    private final String email;
+    private final String password;
+    private final String firstName;
+    private final String lastName;
+    private final String nickName;
+
+    public SignUp(String email, String password, String firstName, String lastName, String nickName) {
+        if (email == null || password == null || firstName == null || lastName == null || nickName == null) {
+            throw new IllegalArgumentException("Missing or incomplete data.");
+        }
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.nickName = nickName;
+    }
+    public static SignUp fromJson(String jsonString) {
+        JSONObject json = new JSONObject(jsonString);
+        String email = json.optString("email", null);
+        String password = json.optString("password", null);
+        String firstName = json.optString("firstName", null);
+        String lastName = json.optString("lastName", null);
+        String nickName = json.optString("nickName", null);
+
+        return new SignUp(email, password, firstName, lastName, nickName);
+    }
+
+    @Override
+    public String toString() {
+        return "SignUp{" +
+                "email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", nickName='" + nickName + '\'' +
+                '}';
+    }
 }
