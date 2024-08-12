@@ -17,6 +17,7 @@ import com.syndicate.deployment.model.lambda.url.AuthType;
 import com.syndicate.deployment.model.lambda.url.InvokeMode;
 import com.task10.handler.PostSignIn;
 import com.task10.handler.PostSignUp;
+import com.task10.handler.PostTables;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
@@ -36,7 +37,9 @@ import java.util.Map;
 @EnvironmentVariables(value = {
 		@EnvironmentVariable(key = "REGION", value = "${region}"),
 		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = ValueTransformer.USER_POOL_NAME_TO_USER_POOL_ID),
-		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = ValueTransformer.USER_POOL_NAME_TO_CLIENT_ID)
+		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = ValueTransformer.USER_POOL_NAME_TO_CLIENT_ID),
+		@EnvironmentVariable(key="tables_table",value = "${tables_table}"),
+		@EnvironmentVariable(key = "reservations_table",value = "${reservations_table}")
 })
 public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
@@ -46,9 +49,10 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
 	private final PostSignIn postSignIn;
 	private final TableService tableService;
 	private final ReservationService reservationService;
-
+	private final PostTables postTables;
 	public ApiHandler() {
-		this.cognitoClient = initCognitoClient();
+		this.postTables=new PostTables();
+        this.cognitoClient = initCognitoClient();
 		this.headersForCORS = initHeadersForCORS();
 		this.postSignUp = new PostSignUp(cognitoClient);
 		this.postSignIn = new PostSignIn(cognitoClient);
@@ -83,18 +87,20 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
 					response = buildResponse(400, "Unsupported HTTP method for /signin");
 				}
 				break;
+
 			case "/tables":
 				if ("GET".equalsIgnoreCase(httpMethod)) {
-					response = tableService.handleGetTables(event);
+					response = postTables.handleRequestGet();
 				} else if ("POST".equalsIgnoreCase(httpMethod)) {
-					response = tableService.handleCreateTable(event);
+					response = postTables.handleRequestPost(event);
 				} else {
 					response = buildResponse(400, "Unsupported HTTP method for /tables");
 				}
 				break;
-			case "/tables/{tableId}":
+			case "/tables/\\d+":
 				if ("GET".equalsIgnoreCase(httpMethod)) {
-					response = tableService.handleGetTableById(event);
+					int tableId = Integer.parseInt(requestPath.split("/")[2]);
+					response =postTables.handleRequestGetById(tableId);
 				} else {
 					response = buildResponse(400, "Unsupported HTTP method for /tables/{tableId}");
 				}

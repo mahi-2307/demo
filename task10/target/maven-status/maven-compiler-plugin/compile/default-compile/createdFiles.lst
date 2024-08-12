@@ -6,8 +6,7 @@ com\task10\handler\PostReservations.class
 com\task10\dto\SignIn.class
 com\task10\dto\SignUp.class
 com\task10\handler\PostSignIn.class
-com\task10\handler\GetTable.class
-com\task10\handler\GetReservations.class
+com\task10\dto\NumberWrapper.class
 com\task10\handler\PostTables.class
 com\task10\dto\Tables.class
 com\task10\handler\PostSignUp.class

@@ -23,9 +23,9 @@ public abstract class CognitoSupport {
         this.cognitoClient = cognitoClient;
     }
 
-    protected AdminInitiateAuthResponse cognitoSignIn(String nickName, String password) {
+    protected AdminInitiateAuthResponse cognitoSignIn(String email, String password) {
         Map<String, String> authParams = Map.of(
-                "USERNAME", nickName,
+                "USERNAME", email,
                 "PASSWORD", password
         );
 
@@ -41,15 +41,11 @@ public abstract class CognitoSupport {
 
         return cognitoClient.adminCreateUser(AdminCreateUserRequest.builder()
                 .userPoolId(userPoolId)
-                .username(signUp.getNickName())
+                .username(signUp.getEmail())
                 .temporaryPassword(signUp.getPassword())
                 .userAttributes(
                         AttributeType.builder()
                                 .name("given_name")
-                                .value(signUp.getFirstName())
-                                .build(),
-                        AttributeType.builder()
-                                .name("family_name")
                                 .value(signUp.getFirstName())
                                 .build(),
                         AttributeType.builder()
@@ -68,14 +64,14 @@ public abstract class CognitoSupport {
     }
 
     protected AdminRespondToAuthChallengeResponse confirmSignUp(SignUp signUp) {
-        AdminInitiateAuthResponse adminInitiateAuthResponse = cognitoSignIn(signUp.getNickName(), signUp.getPassword());
+        AdminInitiateAuthResponse adminInitiateAuthResponse = cognitoSignIn(signUp.getEmail(), signUp.getPassword());
 
         if (!ChallengeNameType.NEW_PASSWORD_REQUIRED.name().equals(adminInitiateAuthResponse.challengeNameAsString())) {
             throw new RuntimeException("unexpected challenge: " + adminInitiateAuthResponse.challengeNameAsString());
         }
 
         Map<String, String> challengeResponses = Map.of(
-                "USERNAME", signUp.getNickName(),
+                "USERNAME", signUp.getEmail(),
                 "PASSWORD", signUp.getPassword(),
                 "NEW_PASSWORD", signUp.getPassword()
         );

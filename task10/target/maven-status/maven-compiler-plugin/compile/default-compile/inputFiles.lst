@@ -1,8 +1,8 @@
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\ApiHandler.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\handler\PostTables.java
-C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\handler\GetTable.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\dto\Tables.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\ReservationService.java
+C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\dto\NumberWrapper.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\dto\SignIn.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\dto\SignUp.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\CognitoSupport.java
@@ -10,5 +10,4 @@ C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\dto\Reservatio
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\handler\PostReservations.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\TableService.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\handler\PostSignUp.java
-C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\handler\GetReservations.java
 C:\Users\mahidhar_reddy\AWStasks\task10\jsrc\main\java\com\task10\handler\PostSignIn.java

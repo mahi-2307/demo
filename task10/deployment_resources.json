@@ -12,6 +12,7 @@
             "dynamodb:PutItem",
             "dynamodb:Batch*",
             "dynamodb:DeleteItem",
+            "dynamodb:Scan",
             "ssm:PutParameter",
             "ssm:GetParameter",
             "kms:Decrypt",
@@ -35,14 +36,14 @@
     "resource_type": "iam_policy"
   },
   "api_handler-role": {
-    "predefined_policies": ["AmazonESCognitoAccess"],
+    "predefined_policies": ["AmazonESCognitoAccess","AmazonDynamoDBFullAccess"],
     "principal_service": "lambda",
     "custom_policies": [
       "lambda-basic-execution"
     ],
     "resource_type": "iam_role"
   },
-  "Tables": {
+  "${tables_table}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "id",
     "hash_key_type": "N",
@@ -51,7 +52,7 @@
     "global_indexes": [],
     "autoscaling": []
   },
-  "Reservations": {
+  "${reservations_table}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "id",
     "hash_key_type": "N",

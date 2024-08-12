@@ -8,17 +8,15 @@ public class SignUp {
     private final String password;
     private final String firstName;
     private final String lastName;
-    private final String nickName;
 
-    public SignUp(String email, String password, String firstName, String lastName, String nickName) {
-        if (email == null || password == null || firstName == null || lastName == null || nickName == null) {
+    public SignUp(String email, String password, String firstName, String lastName) {
+        if (email == null || password == null || firstName == null || lastName == null) {
             throw new IllegalArgumentException("Missing or incomplete data.");
         }
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.nickName = nickName;
     }
     public static SignUp fromJson(String jsonString) {
         JSONObject json = new JSONObject(jsonString);
@@ -26,9 +24,9 @@ public class SignUp {
         String password = json.optString("password", null);
         String firstName = json.optString("firstName", null);
         String lastName = json.optString("lastName", null);
-        String nickName = json.optString("nickName", null);
 
-        return new SignUp(email, password, firstName, lastName, nickName);
+
+        return new SignUp(email, password, firstName, lastName);
     }
 
     @Override
@@ -38,7 +36,6 @@ public class SignUp {
                 ", password='" + password + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", nickName='" + nickName + '\'' +
                 '}';
     }
 }

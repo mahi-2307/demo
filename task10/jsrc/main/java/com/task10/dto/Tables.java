@@ -11,7 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Tables {
     private int id;
-    private int number;
+    private NumberWrapper number; // Adjusted to match JSON structure
     private int places;
     private boolean isVip;
 }
+
+
