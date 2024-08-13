@@ -1,5 +1,7 @@
 package com.task10;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.task10.dto.SignUp;
+import org.json.JSONObject;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserResponse;
@@ -13,6 +15,8 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.ChallengeNa
 import software.amazon.awssdk.services.cognitoidentityprovider.model.DeliveryMediumType;
 
 import java.util.Map;
+import java.util.regex.Pattern;
+
 public abstract class CognitoSupport {
 
     private final String userPoolId = System.getenv("COGNITO_ID");
@@ -22,6 +26,18 @@ public abstract class CognitoSupport {
     protected CognitoSupport(CognitoIdentityProviderClient cognitoClient) {
         this.cognitoClient = cognitoClient;
     }
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile(
+            "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[\\$\\%\\^\\*])[A-Za-z0-9\\$\\%\\^\\*]{12,}$");
+    private boolean isValidEmail(String email) {
+        return EMAIL_PATTERN.matcher(email).matches();
+    }
+    private boolean isValidPassword(String password) {
+        return PASSWORD_PATTERN.matcher(password).matches();
+    }
+
 
     protected AdminInitiateAuthResponse cognitoSignIn(String email, String password) {
         Map<String, String> authParams = Map.of(
@@ -38,7 +54,6 @@ public abstract class CognitoSupport {
     }
 
     protected AdminCreateUserResponse cognitoSignUp(SignUp signUp) {
-
         return cognitoClient.adminCreateUser(AdminCreateUserRequest.builder()
                 .userPoolId(userPoolId)
                 .username(signUp.getEmail())
